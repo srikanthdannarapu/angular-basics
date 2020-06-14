@@ -1,0 +1,24 @@
+<p [ngStyle]="{backgroundColor: getColor()}"
+    [ngClass]="{success: serverStatus === 'online'}">
+    {{'server'}} with serverID {{serverId}} is {{getServerStatus()}} 
+ </p>
+<input type="text" 
+    class="form-control"
+    (input)="onUpdateServerName($event)">
+    <!--<P>{{serverName}}</P> -->
+
+<input type="text" 
+    class="form-control"
+    [(ngModel)] = "serverName">
+    <!-- <P>{{serverName}}</P> -->
+
+<button class = "btn btn-primary" [disabled] = "!allowNewServer" (click) = "onCreateServer()">Add Server</button>
+<p *ngIf="buttonClicked; else noServer" [hidden] = "showSuccesMessage" class= "success">server was created and server is  {{ serverName }}</p>
+<ng-template #noServer>
+    <p>
+        No server was created
+    </p>
+</ng-template>
+<p>allowNewServer : {{allowNewServer}}</p>
+<p>serverCreationStatus : {{serverCreationStatus}}</p>
+
