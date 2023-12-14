@@ -1,27 +1,29 @@
-# SecondApp
+CREATE TABLE rpt_file_trk (
+    rpt_id VARCHAR(255) NOT NULL,
+    rqst_cust_id NUMERIC(10) NOT NULL,
+    endpnt_id VARCHAR(7) NOT NULL,
+    flie_stat_cd VARCHAR(11) NOT NULL,
+    user_id VARCHAR(20) NOT NULL,
+    file_frmt_cd VARCHAR(3) NOT NULL,
+    prcss_type_cd VARCHAR(6) NOT NULL,
+    rpt_seq_id NUMERIC REFERENCES rpt_trk(rpt_seq_id),
+    appl_gnrtrpt_sw VARCHAR(1),
+    rpt_type_cd VARCHAR(3),
+    rpt_sum_txt BYTEA,
+    crte_dttm TIMESTAMP NOT NULL
+);
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.21.
-
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+CREATE TABLE rpt_trk (
+    rpt_seq_id NUMERIC NOT NULL,
+    prcss_type_cd VARCHAR(6) NOT NULL,
+    prcss_stat_cd VARCHAR(11),
+    resp_rpt_stat_cd VARCHAR(11),
+    mc_unq_fl_nam VARCHAR(44) NOT NULL,
+    cust_fl_nam VARCHAR(50),
+    send_cust_id NUMERIC,
+    tot_rec_cnt NUMERIC,
+    acpt_rec_cnt NUMERIC,
+    rej_rec_cnt NUMERIC,
+    crte_dttm TIMESTAMP NOT NULL,
+    lst_updt_dttm TIMESTAMP
+);
