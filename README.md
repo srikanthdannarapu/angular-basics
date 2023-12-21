@@ -1,33 +1,34 @@
-public void write(List<? extends Customer> customers) throws Exception {
-        try (FileOutputStream fileOut = new FileOutputStream(EXCEL_FILE_PATH)) {
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-            Sheet sheet = workbook.getSheet("Customers");
-            // Header Row
-            Row headerRow = sheet.createRow(0);
-            headerRow.createCell(0).setCellValue("H");
-            headerRow.createCell(1).setCellValue("Excel Report");
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
-            int rowNum = 1;
+@Component
+public class RestApiItemReader implements ItemReader<Customer> {
 
-            for (Customer customer : customers) {
-                Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(customer.getId());
-                row.createCell(1).setCellValue(customer.getFirstName());
-                row.createCell(2).setCellValue(customer.getLastName());
-                row.createCell(3).setCellValue(customer.getEmail());
-                row.createCell(4).setCellValue(customer.getGender());
-                row.createCell(5).setCellValue(customer.getContactNo());
-                row.createCell(6).setCellValue(customer.getCountry());
-                row.createCell(7).setCellValue(customer.getDob());
-            }
-            // Tail Row
-            Row tailRow = sheet.createRow(rowNum);
-            tailRow.createCell(0).setCellValue("T");
-            tailRow.createCell(1).setCellValue(customers.size());
+    private final String apiUrl = "https://your-api-url/customers"; // Replace with your actual API endpoint
 
-            workbook.write(fileOut);
+    private final RestTemplate restTemplate;
+    private Iterator<Customer> customerIterator;
 
-        } catch (IOException e) {
-            throw new RuntimeException("Error writing to XLSX file", e);
-        }
+    public RestApiItemReader(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
+
+    @Override
+    public Customer read() throws Exception {
+        if (customerIterator == null || !customerIterator.hasNext()) {
+            initializeIterator();
+        }
+
+        return customerIterator.hasNext() ? customerIterator.next() : null;
+    }
+
+    private void initializeIterator() {
+        Customer[] customersArray = restTemplate.getForObject(apiUrl, Customer[].class);
+        List<Customer> customers = Arrays.asList(customersArray);
+        customerIterator = customers.iterator();
+    }
+}
