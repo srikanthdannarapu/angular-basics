@@ -1,34 +1,13 @@
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+public String getDataFromRemoteService(String param1, String param2) {
+        String url = baseUrl + "/resource";
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+        // Adding query parameters dynamically
+        url = addQueryParam(url, "param1", param1);
+        url = addQueryParam(url, "param2", param2);
 
-@Component
-public class RestApiItemReader implements ItemReader<Customer> {
-
-    private final String apiUrl = "https://your-api-url/customers"; // Replace with your actual API endpoint
-
-    private final RestTemplate restTemplate;
-    private Iterator<Customer> customerIterator;
-
-    public RestApiItemReader(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+        return restTemplate.getForObject(url, String.class);
     }
 
-    @Override
-    public Customer read() throws Exception {
-        if (customerIterator == null || !customerIterator.hasNext()) {
-            initializeIterator();
-        }
-
-        return customerIterator.hasNext() ? customerIterator.next() : null;
+    private String addQueryParam(String url, String paramName, String paramValue) {
+        return url + (url.contains("?") ? "&" : "?") + paramName + "=" + paramValue;
     }
-
-    private void initializeIterator() {
-        Customer[] customersArray = restTemplate.getForObject(apiUrl, Customer[].class);
-        List<Customer> customers = Arrays.asList(customersArray);
-        customerIterator = customers.iterator();
-    }
-}
