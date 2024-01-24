@@ -1,11 +1,1 @@
-public String getDataFromRemoteService(String param1, String param2, LocalDateTime param3) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedDateTime = param3.format(formatter);
-
-        String url = baseUrl + resourcePath
-                .replace("{param1}", param1)
-                .replace("{param2}", param2)
-                .replace("{param3}", formattedDateTime);
-
-        return restTemplate.getForObject(url, String.class);
-    }
+Due to my mother's deteriorating health, I am unable to return to my base location as my family needs me to provide essential care and treatment for her. Additionally, my child is currently enrolled in school at my current location, and securing admission in a new location would pose a significant challenge, further necessitating my presence here. Therefore, it is crucial that I remain with my family to attend to both my mother's health needs and my child's educational commitments.
