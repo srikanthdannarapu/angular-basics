@@ -7,84 +7,76 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.item.file.FlatFileItemWriter;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.batch.item.ExecutionContext;
+
+import java.io.FileOutputStream;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CsvItemWriterTest {
+class ExcelItemWriterTest {
 
     @Mock
     private StepExecution stepExecution;
 
-    private CsvItemWriter csvItemWriter;
+    private ExcelItemWriter excelItemWriter;
 
     @BeforeEach
     void setUp() {
-        csvItemWriter = new CsvItemWriter();
-        csvItemWriter.beforeStep(stepExecution);
+        excelItemWriter = new ExcelItemWriter();
     }
 
     @Test
-    void testWrite() throws Exception {
-        // Given
-        FlatFileItemWriter<Customer> csvWriter = csvItemWriter.getCsvWriter();
-        csvItemWriter.csvWriter = csvWriter;
-        List<Customer> customers = Arrays.asList(
-                new Customer(1, "John", "Doe", "john@example.com", "Male", "1234567890", "USA", "1990-01-01"),
-                new Customer(2, "Jane", "Doe", "jane@example.com", "Female", "0987654321", "UK", "1995-05-05")
-        );
-
-        // When
-        csvItemWriter.write(customers);
-
-        // Then
-        Mockito.verify(csvWriter, Mockito.times(1)).open(any());
-        Mockito.verify(csvWriter, Mockito.times(1)).write(customers);
-    }
-
-    @Test
-    void testCloseWriter() throws Exception {
-        // Given
-        FlatFileItemWriter<Customer> csvWriter = mock(FlatFileItemWriter.class);
-        csvItemWriter.csvWriter = csvWriter;
-        csvItemWriter.isWriterOpen = true;
-
-        // When
-        csvItemWriter.closeWriter();
-
-        // Then
-        Mockito.verify(csvWriter, Mockito.times(1)).setFooterCallback(any());
-        Mockito.verify(csvWriter, Mockito.times(1)).close();
-    }
-
-    @Test
-    void testBeforeStep() {
+    void testBeforeStep_ExcelFile() {
         // Given
         JobParameters jobParameters = new JobParametersBuilder()
-                .addString("fileTypesToGenerateReport", "csv")
+                .addString("fileTypesToGenerateReport", "excel")
                 .toJobParameters();
         when(stepExecution.getJobParameters()).thenReturn(jobParameters);
 
         // When
-        csvItemWriter.beforeStep(stepExecution);
+        excelItemWriter.beforeStep(stepExecution);
 
         // Then
-        assertEquals("csv", csvItemWriter.prefix);
-        assertEquals(true, csvItemWriter.csvWriter != null);
+        assertNotNull(excelItemWriter.workbook);
+        assertNotNull(excelItemWriter.sheet);
+        assertEquals("Customers", excelItemWriter.sheet.getSheetName());
     }
 
     @Test
-    void testAfterStep() {
+    void testWrite_ExcelFile() throws Exception {
+        // Given
+        excelItemWriter.workbook = Mockito.mock(Workbook.class);
+        excelItemWriter.sheet = Mockito.mock(Sheet.class);
+        excelItemWriter.fileTypesToGenerateReport = "excel";
+        excelItemWriter.totalLinesWritten = 0;
+        Customer customer = new Customer(1, "John", "Doe", "john@example.com", "Male", "1234567890", "USA", "1990-01-01");
+
         // When
-        ExitStatus exitStatus = csvItemWriter.afterStep(stepExecution);
+        excelItemWriter.write(Collections.singletonList(customer));
 
         // Then
+        verify(excelItemWriter.sheet, times(1)).createRow(1); // Row creation for customer
+        verify(excelItemWriter.workbook, times(1)).write(any(FileOutputStream.class)); // Workbook write
+        assertEquals(1, excelItemWriter.getTotalLinesWritten());
+    }
+
+    @Test
+    void testAfterStep_ExcelFile() throws Exception {
+        // Given
+        excelItemWriter.workbook = Mockito.mock(Workbook.class);
+        excelItemWriter.sheet = Mockito.mock(Sheet.class);
+        excelItemWriter.fileTypesToGenerateReport = "excel";
+        excelItemWriter.totalLinesWritten = 10;
+
+        // When
+        ExitStatus exitStatus = excelItemWriter.afterStep(stepExecution);
+
+        // Then
+        verify(excelItemWriter.workbook, times(1)).close(); // Workbook close
         assertEquals(ExitStatus.COMPLETED, exitStatus);
     }
 }
-
